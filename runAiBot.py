@@ -986,7 +986,16 @@ def apply_to_jobs(search_terms: list[str]) -> None:
                             try:
                                 errored = ""
                                 modal = find_by_class(driver, "jobs-easy-apply-modal")
-                                wait_span_click(modal, "Next", 1)
+                                
+                                # Wait a moment for modal to fully load
+                                buffer(1)
+                                
+                                # Use enhanced button finding for initial Next button
+                                success, button_found = find_and_click_easy_apply_button(modal, driver, ["Next"])
+                                if not success:
+                                    print_lg("Failed to find initial Next button")
+                                    raise Exception("Could not find initial Next button")
+                                
                                 # if description != "Unknown":
                                 #     resume = create_custom_resume(description)
                                 resume = "Previous resume"
@@ -1005,38 +1014,86 @@ def apply_to_jobs(search_terms: list[str]) -> None:
                                         screenshot_name = screenshot(driver, job_id, "Failed at questions")
                                         errored = "stuck"
                                         raise Exception("Seems like stuck in a continuous loop of next, probably because of new questions.")
+                                    
                                     questions_list = answer_questions(modal, questions_list, work_location, job_description=description)
                                     if useNewResume and not uploaded: uploaded, resume = upload_resume(modal, default_resume_path)
-                                    try: next_button = modal.find_element(By.XPATH, './/span[normalize-space(.)="Review"]') 
-                                    except NoSuchElementException:  next_button = modal.find_element(By.XPATH, './/button[contains(span, "Next")]')
-                                    try: next_button.click()
-                                    except ElementClickInterceptedException: break    # Happens when it tries to click Next button in About Company photos section
-                                    buffer(click_gap)
+                                    
+                                    # Look for Next button first
+                                    success, button_found = find_and_click_easy_apply_button(modal, driver, ["Next"])
+                                    if success:
+                                        print_lg("Found Next button, continuing to next page...")
+                                        buffer(click_gap)
+                                        continue
+                                    
+                                    # If no Next button found, look for Review button (final step before submit)
+                                    success, button_found = find_and_click_easy_apply_button(modal, driver, ["Review"])
+                                    if success:
+                                        print_lg("Found Review button, moving to final submission step...")
+                                        buffer(2)  # Wait for final page to load
+                                        
+                                        # Now directly look for and click Submit application button
+                                        print_lg("Looking for Submit application button after Review...")
+                                        submit_success, submit_button_text = find_and_click_easy_apply_button(modal, driver, ["Submit application", "Submit"])
+                                        
+                                        # If regular method failed, try the specialized aggressive Submit finder
+                                        if not submit_success:
+                                            print_lg("Regular Submit button search failed, trying aggressive method...")
+                                            submit_success = find_submit_button_aggressively(modal, driver)
+                                            submit_button_text = "Submit application" if submit_success else ""
+                                        
+                                        if submit_success:
+                                            print_lg(f"Successfully clicked {submit_button_text} button")
+                                            date_applied = datetime.now()
+                                            follow_company(modal)
+                                            if not wait_span_click(driver, "Done", 2): 
+                                                actions.send_keys(Keys.ESCAPE).perform()
+                                            print_lg("✅ Easy Apply completed successfully!")
+                                            break  # Exit the loop as application is submitted
+                                        else:
+                                            print_lg("❌ Failed to find Submit application button after Review")
+                                            raise Exception("Could not find Submit application button after Review")
+                                    
+                                    # If neither Next nor Review found, we might be stuck
+                                    print_lg("No Next or Review buttons found, assuming we're at final step")
+                                    break
 
                             except NoSuchElementException: errored = "nose"
                             finally:
                                 if questions_list and errored != "stuck": 
                                     print_lg("Answered the following questions...", questions_list)
                                     print("\n\n" + "\n".join(str(question) for question in questions_list) + "\n\n")
-                                wait_span_click(driver, "Review", 1, scrollTop=True)
-                                cur_pause_before_submit = pause_before_submit
-                                if errored != "stuck" and cur_pause_before_submit:
-                                    decision = pyautogui.confirm('1. Please verify your information.\n2. If you edited something, please return to this final screen.\n3. DO NOT CLICK "Submit Application".\n\n\n\n\nYou can turn off "Pause before submit" setting in config.py\nTo TEMPORARILY disable pausing, click "Disable Pause"', "Confirm your information",["Disable Pause", "Discard Application", "Submit Application"])
-                                    if decision == "Discard Application": raise Exception("Job application discarded by user!")
-                                    pause_before_submit = False if "Disable Pause" == decision else True
-                                    # try_xp(modal, ".//span[normalize-space(.)='Review']")
-                                follow_company(modal)
-                                if wait_span_click(driver, "Submit application", 2, scrollTop=True): 
-                                    date_applied = datetime.now()
-                                    if not wait_span_click(driver, "Done", 2): actions.send_keys(Keys.ESCAPE).perform()
-                                elif errored != "stuck" and cur_pause_before_submit and "Yes" in pyautogui.confirm("You submitted the application, didn't you 😒?", "Failed to find Submit Application!", ["Yes", "No"]):
-                                    date_applied = datetime.now()
-                                    wait_span_click(driver, "Done", 2)
-                                else:
-                                    print_lg("Since, Submit Application failed, discarding the job application...")
-                                    # if screenshot_name == "Not Available":  screenshot_name = screenshot(driver, job_id, "Failed to click Submit application")
-                                    # else:   screenshot_name = [screenshot_name, screenshot(driver, job_id, "Failed to click Submit application")]
-                                    if errored == "nose": raise Exception("Failed to click Submit application 😑")
+                                
+                                # If we reach here and date_applied is still "Pending", it means Submit wasn't handled in main loop
+                                if date_applied == "Pending" and errored != "stuck":
+                                    print_lg("Submit button not handled in main loop, trying fallback Submit search...")
+                                    
+                                    cur_pause_before_submit = pause_before_submit
+                                    if cur_pause_before_submit:
+                                        decision = pyautogui.confirm('1. Please verify your information.\n2. If you edited something, please return to this final screen.\n3. DO NOT CLICK "Submit Application".\n\n\n\n\nYou can turn off "Pause before submit" setting in config.py\nTo TEMPORARILY disable pausing, click "Disable Pause"', "Confirm your information",["Disable Pause", "Discard Application", "Submit Application"])
+                                        if decision == "Discard Application": raise Exception("Job application discarded by user!")
+                                        pause_before_submit = False if "Disable Pause" == decision else True
+                                    
+                                    follow_company(modal)
+                                    
+                                    # Fallback Submit button search
+                                    print_lg("Fallback: Looking for Submit application button...")
+                                    submit_success, submit_button_text = find_and_click_easy_apply_button(modal, driver, ["Submit application", "Submit"])
+                                    
+                                    if not submit_success:
+                                        print_lg("Fallback: Regular Submit button search failed, trying aggressive method...")
+                                        submit_success = find_submit_button_aggressively(modal, driver)
+                                        submit_button_text = "Submit application" if submit_success else ""
+                                    
+                                    if submit_success: 
+                                        print_lg(f"Fallback: Successfully clicked {submit_button_text} button")
+                                        date_applied = datetime.now()
+                                        if not wait_span_click(driver, "Done", 2): actions.send_keys(Keys.ESCAPE).perform()
+                                    elif cur_pause_before_submit and "Yes" in pyautogui.confirm("You submitted the application, didn't you 😒?", "Failed to find Submit Application!", ["Yes", "No"]):
+                                        date_applied = datetime.now()
+                                        wait_span_click(driver, "Done", 2)
+                                    else:
+                                        print_lg("Fallback: Since Submit Application failed, discarding the job application...")
+                                        if errored == "nose": raise Exception("Failed to click Submit application 😑")
 
 
                         except Exception as e:
