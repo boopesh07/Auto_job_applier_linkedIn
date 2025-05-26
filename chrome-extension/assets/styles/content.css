@@ -1,0 +1,467 @@
+/* LinkedIn Auto Job Applier - Content Styles */
+
+.linkedin-auto-applier-container {
+    margin: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.linkedin-auto-applier-btn {
+    background: linear-gradient(135deg, #0066cc, #004499);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 102, 204, 0.25);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    max-width: 200px;
+}
+
+.linkedin-auto-applier-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0052a3, #003366);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 102, 204, 0.35);
+}
+
+.linkedin-auto-applier-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 102, 204, 0.25);
+}
+
+.linkedin-auto-applier-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.applier-btn-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.applier-btn-content svg {
+    flex-shrink: 0;
+}
+
+.applier-btn-content span {
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+/* Spinner animation */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Notification styles */
+.linkedin-applier-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease-out;
+}
+
+.linkedin-applier-notification.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.linkedin-applier-notification.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Specific styles for job listing pages */
+.job-card-container .linkedin-auto-applier-container,
+.job-result-card .linkedin-auto-applier-container,
+.job-card-search .linkedin-auto-applier-container {
+    margin: 8px 0 0 0;
+}
+
+.job-card-container .linkedin-auto-applier-btn,
+.job-result-card .linkedin-auto-applier-btn,
+.job-card-search .linkedin-auto-applier-btn {
+    font-size: 12px;
+    padding: 6px 10px;
+    min-height: 32px;
+    border-radius: 5px;
+}
+
+/* Specific styles for job detail pages */
+.job-details-jobs-unified-top-card .linkedin-auto-applier-container,
+.jobs-unified-top-card .linkedin-auto-applier-container {
+    margin: 16px 0;
+}
+
+.job-details-jobs-unified-top-card .linkedin-auto-applier-btn,
+.jobs-unified-top-card .linkedin-auto-applier-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-height: 48px;
+    border-radius: 8px;
+    max-width: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .linkedin-auto-applier-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-height: 32px;
+    }
+
+    .applier-btn-content span {
+        font-size: 12px;
+    }
+
+    .job-details-jobs-unified-top-card .linkedin-auto-applier-btn,
+    .jobs-unified-top-card .linkedin-auto-applier-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+        min-height: 40px;
+    }
+
+    .linkedin-applier-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+    }
+}
+
+/* Ensure buttons don't interfere with LinkedIn's layout */
+.linkedin-auto-applier-container {
+    z-index: 1;
+    position: relative;
+}
+
+/* Make sure buttons are visible on different backgrounds */
+.linkedin-auto-applier-btn {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Better integration with LinkedIn's design */
+.job-card-container .linkedin-auto-applier-container {
+    border-top: 1px solid #e8e8e8;
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+/* Animation for when buttons appear */
+.linkedin-auto-applier-btn {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* LinkedIn Auto Job Applier - Floating Popup Styles */
+
+.linkedin-auto-applier-popup {
+    position: fixed;
+    top: 20%;
+    right: 20px;
+    width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    border: 1px solid #e8e8e8;
+    transition: all 0.3s ease;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.linkedin-auto-applier-popup.minimized {
+    height: 60px;
+    overflow: hidden;
+}
+
+.popup-content {
+    padding: 0;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e8e8e8;
+    border-radius: 12px 12px 0 0;
+    cursor: move;
+    user-select: none;
+}
+
+.popup-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+}
+
+.popup-minimize {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: #666;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-minimize:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+.popup-body {
+    padding: 20px;
+}
+
+.popup-description {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.popup-stats {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e8e8e8;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+.stat-value.loading {
+    color: #0066cc;
+}
+
+.stat-value.success {
+    color: #10b981;
+}
+
+.stat-value.error {
+    color: #ef4444;
+}
+
+.auto-apply-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #0066cc, #004499);
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    color: white;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    margin-bottom: 16px;
+}
+
+.auto-apply-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #0052a3, #003366);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.35);
+}
+
+.auto-apply-btn:active {
+    transform: translateY(0);
+}
+
+.auto-apply-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.auto-apply-btn.loading {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+.auto-apply-btn.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.auto-apply-btn.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-content span {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.popup-footer {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.popup-footer small {
+    color: #888;
+    font-size: 12px;
+}
+
+/* Slide in animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .linkedin-auto-applier-popup {
+        right: 10px;
+        left: 10px;
+        width: auto;
+        top: 10%;
+    }
+
+    .popup-body {
+        padding: 16px;
+    }
+
+    .auto-apply-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    .linkedin-applier-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .linkedin-auto-applier-popup {
+        border: 2px solid #333;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .popup-header {
+        border-bottom: 2px solid #333;
+    }
+
+    .auto-apply-btn {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+    .linkedin-auto-applier-popup,
+    .linkedin-applier-notification {
+        animation: none;
+    }
+
+    .auto-apply-btn {
+        transition: none;
+    }
+
+    .spinner {
+        animation: none;
+        border: 2px solid white;
+        border-top: 2px solid rgba(255, 255, 255, 0.3);
+    }
+}

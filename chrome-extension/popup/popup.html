@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Auto Job Applier</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="popup-container">
+        <header class="popup-header">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 3L4 14h7v7l9-11h-7V3z" fill="#0066cc" />
+                </svg>
+                <h1>Job Applier</h1>
+            </div>
+            <button id="settingsBtn" class="icon-btn" title="Settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </button>
+        </header>
+
+        <main class="popup-main">
+            <div id="statusSection" class="status-section">
+                <div class="status-indicator">
+                    <div id="statusDot" class="status-dot offline"></div>
+                    <span id="statusText">Checking status...</span>
+                </div>
+                <div id="statusDetails" class="status-details"></div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="appliedCount">-</div>
+                    <div class="stat-label">Applied Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="successRate">-</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <button id="quickApplyBtn" class="primary-btn" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 3L4 14h7v7l9-11h-7V3z" fill="white" />
+                    </svg>
+                    Quick Apply Current Job
+                </button>
+
+                <button id="viewHistoryBtn" class="secondary-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3h18v18H3zM9 9h6m-6 4h6m-6 4h4"></path>
+                    </svg>
+                    View Application History
+                </button>
+            </div>
+
+            <div class="quick-settings">
+                <div class="setting-item">
+                    <label for="autoSubmit">Auto Submit Applications</label>
+                    <input type="checkbox" id="autoSubmit" class="toggle">
+                </div>
+                <div class="setting-item">
+                    <label for="useAI">Use AI for Responses</label>
+                    <input type="checkbox" id="useAI" class="toggle">
+                </div>
+            </div>
+        </main>
+
+        <footer class="popup-footer">
+            <div class="footer-links">
+                <a href="#" id="helpLink">Help</a>
+                <a href="#" id="feedbackLink">Feedback</a>
+            </div>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#0066cc"/>
+  
+  <!-- Lightning bolt icon -->
+  <path d="M70 25L40 75h20v28l30-50H70V25z" fill="white"/>
+  
+  <!-- Small accent circle -->
+  <circle cx="90" cy="38" r="8" fill="#ffffff" opacity="0.8"/>
+</svg> 

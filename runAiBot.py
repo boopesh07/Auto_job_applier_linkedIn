@@ -27,6 +27,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchWindowException, ElementNotInteractableException
 
 from config.personals import *
@@ -1268,6 +1270,104 @@ def main() -> None:
         ##<
         try: driver.quit()
         except Exception as e: critical_error_log("When quitting...", e)
+
+
+def main_extension_mode() -> None:
+    """
+    Main function for extension mode - skips login since user is already logged in
+    This function is called from the Flask web app when triggered by the Chrome extension
+    """
+    try:
+        global linkedIn_tab, tabs_count, useNewResume, aiClient
+        alert_title = "Error Occurred. Closing Browser!"
+        total_runs = 1        
+        validate_config()
+        
+        if not os.path.exists(default_resume_path):
+            print_lg(f'Warning: Default resume "{default_resume_path}" is missing! The bot will continue using previous upload from LinkedIn!')
+            useNewResume = False
+        
+        # Check if we have an existing driver instance
+        global driver, wait, actions
+        try:
+            # Try to use existing driver session or create new one
+            if 'driver' not in globals() or driver is None:
+                # Initialize browser if not already done
+                from modules.open_chrome import driver, wait, actions
+                
+            # Check if LinkedIn is accessible
+            current_url = driver.current_url
+            if 'linkedin.com' not in current_url:
+                print_lg("Driver not on LinkedIn, navigating to LinkedIn jobs...")
+                driver.get("https://www.linkedin.com/jobs")
+                
+            # Verify we're logged in
+            if not is_logged_in_LN():
+                print_lg("User not logged in to LinkedIn! Please log in manually and try again.")
+                return
+                
+            linkedIn_tab = driver.current_window_handle
+            tabs_count = len(driver.window_handles)
+            
+        except Exception as e:
+            print_lg("Error initializing browser session:", e)
+            # Create new browser session
+            driver = open_chrome()
+            wait = WebDriverWait(driver, timeout)
+            actions = ActionChains(driver)
+            
+            driver.get("https://www.linkedin.com/jobs")
+            if not is_logged_in_LN():
+                print_lg("Please log in to LinkedIn manually and try again.")
+                return
+                
+            linkedIn_tab = driver.current_window_handle
+            tabs_count = len(driver.window_handles)
+
+        # Initialize AI if configured
+        if use_AI:
+            print_lg(f"Initializing AI client for {ai_provider}...")
+            if ai_provider.lower() == "openai":
+                aiClient = ai_create_openai_client()
+            elif ai_provider.lower() == "deepseek":
+                aiClient = deepseek_create_client()
+            else:
+                print_lg(f"Unknown AI provider: {ai_provider}. Supported providers are: openai, deepseek")
+                aiClient = None
+        
+        # Start applying to jobs - single run for extension mode
+        print_lg("Starting job application automation from Chrome extension...")
+        total_runs = run(total_runs)
+        
+        print_lg("Job application automation completed!")
+        
+
+    except NoSuchWindowException:   
+        pass
+    except Exception as e:
+        critical_error_log("In Extension Main", e)
+        print_lg(f"Error in extension mode: {e}")
+    finally:
+        print_lg("\n\nExtension Mode Summary:")
+        print_lg("Jobs Easy Applied:              {}".format(easy_applied_count))
+        print_lg("External job links collected:   {}".format(external_jobs_count))
+        print_lg("                              ----------")
+        print_lg("Total applied or collected:     {}".format(easy_applied_count + external_jobs_count))
+        print_lg("\nFailed jobs:                    {}".format(failed_count))
+        print_lg("Irrelevant jobs skipped:        {}\n".format(skip_count))
+        if randomly_answered_questions: 
+            print_lg("\n\nQuestions randomly answered:\n  {}  \n\n".format(";\n".join(str(question) for question in randomly_answered_questions)))
+        
+        # Close AI client if initialized
+        if use_AI and aiClient:
+            try:
+                if ai_provider.lower() == "openai":
+                    ai_close_openai_client(aiClient)
+                elif ai_provider.lower() == "deepseek":
+                    ai_close_openai_client(aiClient)  
+                print_lg(f"Closed {ai_provider} AI client.")
+            except Exception as e:
+                print_lg("Failed to close AI client:", e)
 
 
 if __name__ == "__main__":

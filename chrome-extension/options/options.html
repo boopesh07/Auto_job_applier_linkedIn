@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Auto Job Applier - Settings</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 3L4 14h7v7l9-11h-7V3z" fill="#0066cc" />
+                </svg>
+                <h1>LinkedIn Auto Job Applier</h1>
+            </div>
+            <div class="version">v1.0.0</div>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="personal">Personal Info</button>
+            <button class="tab-btn" data-tab="preferences">Job Preferences</button>
+            <button class="tab-btn" data-tab="ai">AI Settings</button>
+            <button class="tab-btn" data-tab="advanced">Advanced</button>
+        </nav>
+
+        <main class="main-content">
+            <!-- Personal Info Tab -->
+            <div id="personal" class="tab-content active">
+                <div class="section">
+                    <h2>Personal Information</h2>
+                    <p class="section-desc">Configure your personal details for job applications</p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" placeholder="Enter your first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" placeholder="Enter your last name">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="your.email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="+1 (555) 123-4567">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="address">Address</label>
+                            <textarea id="address" rows="3" placeholder="Enter your full address"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Resume</h2>
+                    <p class="section-desc">Upload your default resume for applications</p>
+
+                    <div class="file-upload">
+                        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" hidden>
+                        <button type="button" class="upload-btn"
+                            onclick="document.getElementById('resumeFile').click()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7,10 12,15 17,10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Upload Resume
+                        </button>
+                        <div id="resumeStatus" class="upload-status">No resume uploaded</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Preferences Tab -->
+            <div id="preferences" class="tab-content">
+                <div class="section">
+                    <h2>Job Search Preferences</h2>
+                    <p class="section-desc">Configure your job search criteria and filters</p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="jobTitles">Job Titles</label>
+                            <input type="text" id="jobTitles" placeholder="Software Engineer, Developer, etc.">
+                            <small>Separate multiple titles with commas</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Preferred Location</label>
+                            <input type="text" id="location" placeholder="San Francisco, CA">
+                        </div>
+                        <div class="form-group">
+                            <label for="experienceLevel">Experience Level</label>
+                            <select id="experienceLevel">
+                                <option value="">Any</option>
+                                <option value="entry">Entry Level</option>
+                                <option value="mid">Mid Level</option>
+                                <option value="senior">Senior Level</option>
+                                <option value="executive">Executive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="salaryRange">Desired Salary Range</label>
+                            <input type="text" id="salaryRange" placeholder="$80,000 - $120,000">
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="easyApplyOnly">
+                            <span class="checkmark"></span>
+                            Easy Apply jobs only
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="remoteJobs">
+                            <span class="checkmark"></span>
+                            Include remote jobs
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="requireVisa">
+                            <span class="checkmark"></span>
+                            Require visa sponsorship
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Settings Tab -->
+            <div id="ai" class="tab-content">
+                <div class="section">
+                    <h2>AI Configuration</h2>
+                    <p class="section-desc">Configure AI-powered features for better job applications</p>
+
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <h3>Enable AI Responses</h3>
+                                <p>Use AI to automatically answer application questions</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="enableAI">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <h3>Auto Submit Applications</h3>
+                                <p>Automatically submit applications after filling</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoSubmit">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aiProvider">AI Provider</label>
+                        <select id="aiProvider">
+                            <option value="openai">OpenAI (GPT)</option>
+                            <option value="deepseek">DeepSeek</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="password" id="apiKey" placeholder="Enter your API key">
+                        <small>Your API key is stored securely and never shared</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Tab -->
+            <div id="advanced" class="tab-content">
+                <div class="section">
+                    <h2>Advanced Settings</h2>
+                    <p class="section-desc">Configure advanced behavior and backend connection</p>
+
+                    <div class="form-group">
+                        <label for="backendUrl">Backend URL</label>
+                        <input type="url" id="backendUrl" value="http://localhost:5000"
+                            placeholder="http://localhost:5000">
+                        <small>URL of the Python backend service</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clickDelay">Click Delay (seconds)</label>
+                        <input type="number" id="clickDelay" min="0" max="10" step="0.5" value="1" placeholder="1">
+                        <small>Delay between clicks to appear more human-like</small>
+                    </div>
+
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <div class="toggle-info">
+                                <h3>Debug Mode</h3>
+                                <p>Enable detailed logging for troubleshooting</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="debugMode">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Data Management</h2>
+                    <div class="button-group">
+                        <button type="button" class="secondary-btn" id="exportConfig">Export Settings</button>
+                        <button type="button" class="secondary-btn" id="importConfig">Import Settings</button>
+                        <button type="button" class="danger-btn" id="resetConfig">Reset to Defaults</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-actions">
+                <button type="button" class="secondary-btn" id="cancelBtn">Cancel</button>
+                <button type="button" class="primary-btn" id="saveBtn">Save Settings</button>
+            </div>
+            <div class="footer-info">
+                <p>Settings are automatically synced across your devices</p>
+            </div>
+        </footer>
+    </div>
+
+    <div id="notification" class="notification hidden"></div>
+
+    <script src="options.js"></script>
+</body>
+
+</html>
