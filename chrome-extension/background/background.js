@@ -1,184 +1,214 @@
 // LinkedIn Auto Job Applier - Background Service Worker
+// This service worker handles extension lifecycle and communication
 
-class BackgroundService {
-    constructor() {
-        this.backendUrl = 'http://localhost:5000';
-        this.setupMessageListener();
-        this.setupInstallListener();
-    }
+// Extension installation/update handler
+chrome.runtime.onInstalled.addListener((details) => {
+    console.log('LinkedIn Auto Job Applier extension installed/updated:', details.reason);
 
-    setupInstallListener() {
-        chrome.runtime.onInstalled.addListener((details) => {
-            if (details.reason === 'install') {
-                console.log('LinkedIn Auto Job Applier installed');
-                this.openOptionsPage();
-            }
+    if (details.reason === 'install') {
+        console.log('Extension installed for the first time');
+        // Set default settings
+        chrome.storage.sync.set({
+            autoApplyEnabled: false,
+            pauseBeforeSubmit: true,
+            debugMode: false
         });
     }
+});
 
-    setupMessageListener() {
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            this.handleMessage(request, sender, sendResponse);
-            return true; // Keep the message channel open for async response
-        });
+// Handle messages from content scripts and popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Background received message:', request);
+
+    switch (request.action) {
+        case 'startAutomation':
+            handleStartAutomation(request.data, sendResponse);
+            return true; // Keep message channel open for async response
+
+        case 'stopAutomation':
+            handleStopAutomation(sendResponse);
+            return true;
+
+        case 'getStatus':
+            handleGetStatus(sendResponse);
+            return true;
+
+        case 'logMessage':
+            console.log('Content script log:', request.message);
+            sendResponse({ success: true });
+            break;
+
+        default:
+            console.warn('Unknown action:', request.action);
+            sendResponse({ error: 'Unknown action' });
     }
+});
 
-    async handleMessage(request, sender, sendResponse) {
-        try {
-            switch (request.action) {
-                case 'applyToJob':
-                    await this.handleJobApplication(request.jobInfo, sendResponse);
-                    break;
-                case 'getStatus':
-                    await this.getApplicationStatus(sendResponse);
-                    break;
-                case 'getConfig':
-                    await this.getConfiguration(sendResponse);
-                    break;
-                case 'updateConfig':
-                    await this.updateConfiguration(request.config, sendResponse);
-                    break;
-                default:
-                    sendResponse({ success: false, error: 'Unknown action' });
-            }
-        } catch (error) {
-            console.error('Background service error:', error);
-            sendResponse({ success: false, error: error.message });
-        }
-    }
+// Handle starting automation
+async function handleStartAutomation(data, sendResponse) {
+    try {
+        console.log('Starting automation with data:', data);
 
-    async handleJobApplication(jobInfo, sendResponse) {
-        try {
-            console.log('Processing job application for:', jobInfo);
+        // Get current tab
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-            // Check if backend is running
-            const isBackendRunning = await this.checkBackendStatus();
-            if (!isBackendRunning) {
-                sendResponse({
-                    success: false,
-                    error: 'Backend service is not running. Please start the Python backend.'
-                });
-                return;
-            }
-
-            // Send job application request to backend
-            const response = await fetch(`${this.backendUrl}/api/apply-job`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(jobInfo)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                sendResponse({ success: true, data: result });
-
-                // Show notification
-                this.showNotification('Job Application Started',
-                    `Started applying to ${jobInfo.title} at ${jobInfo.company}`);
-            } else {
-                const error = await response.text();
-                sendResponse({ success: false, error: error });
-            }
-
-        } catch (error) {
-            console.error('Job application error:', error);
+        if (!tab.url.includes('linkedin.com')) {
             sendResponse({
                 success: false,
-                error: 'Failed to connect to backend service. Make sure the Python backend is running.'
+                error: 'Please navigate to LinkedIn jobs page first'
             });
+            return;
         }
-    }
 
-    async checkBackendStatus() {
+        // Send message to Flask backend to start automation
         try {
-            const response = await fetch(`${this.backendUrl}/api/status`, {
-                method: 'GET',
-                timeout: 5000
-            });
-            return response.ok;
-        } catch (error) {
-            console.log('Backend not available:', error);
-            return false;
-        }
-    }
-
-    async getApplicationStatus(sendResponse) {
-        try {
-            const response = await fetch(`${this.backendUrl}/api/status`);
-            if (response.ok) {
-                const status = await response.json();
-                sendResponse({ success: true, data: status });
-            } else {
-                sendResponse({ success: false, error: 'Failed to get status' });
-            }
-        } catch (error) {
-            sendResponse({ success: false, error: error.message });
-        }
-    }
-
-    async getConfiguration(sendResponse) {
-        try {
-            // First try to get from storage
-            const stored = await chrome.storage.sync.get(['config']);
-            if (stored.config) {
-                sendResponse({ success: true, data: stored.config });
-                return;
-            }
-
-            // If not in storage, try to get from backend
-            const response = await fetch(`${this.backendUrl}/api/config`);
-            if (response.ok) {
-                const config = await response.json();
-                // Store in extension storage
-                await chrome.storage.sync.set({ config: config });
-                sendResponse({ success: true, data: config });
-            } else {
-                sendResponse({ success: false, error: 'Failed to get configuration' });
-            }
-        } catch (error) {
-            sendResponse({ success: false, error: error.message });
-        }
-    }
-
-    async updateConfiguration(config, sendResponse) {
-        try {
-            // Save to extension storage
-            await chrome.storage.sync.set({ config: config });
-
-            // Send to backend
-            const response = await fetch(`${this.backendUrl}/api/config`, {
+            const response = await fetch('http://localhost:5000/api/start-automation', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(config)
+                body: JSON.stringify({
+                    url: tab.url,
+                    tabId: tab.id,
+                    timestamp: new Date().toISOString()
+                })
             });
 
-            if (response.ok) {
-                sendResponse({ success: true });
+            const result = await response.json();
+
+            if (result.success) {
+                // Store automation state
+                await chrome.storage.local.set({
+                    automationRunning: true,
+                    automationStartTime: new Date().toISOString(),
+                    processId: result.process_id
+                });
+
+                // Show notification
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: 'assets/icons/icon48.png',
+                    title: 'LinkedIn Auto Job Applier',
+                    message: 'Job application automation started successfully!'
+                });
+
+                sendResponse({ success: true, message: result.message });
             } else {
-                sendResponse({ success: false, error: 'Failed to update backend configuration' });
+                sendResponse({ success: false, error: result.error });
             }
-        } catch (error) {
-            sendResponse({ success: false, error: error.message });
+        } catch (fetchError) {
+            console.error('Failed to communicate with backend:', fetchError);
+            sendResponse({
+                success: false,
+                error: 'Failed to start automation. Make sure the Flask server is running on localhost:5000'
+            });
         }
-    }
 
-    showNotification(title, message) {
-        chrome.notifications.create({
-            type: 'basic',
-            iconUrl: 'assets/icons/icon48.png',
-            title: title,
-            message: message
-        });
-    }
-
-    openOptionsPage() {
-        chrome.runtime.openOptionsPage();
+    } catch (error) {
+        console.error('Error starting automation:', error);
+        sendResponse({ success: false, error: error.message });
     }
 }
 
-// Initialize the background service
-new BackgroundService(); 
+// Handle stopping automation
+async function handleStopAutomation(sendResponse) {
+    try {
+        // Send stop request to Flask backend
+        const response = await fetch('http://localhost:5000/api/stop-automation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const result = await response.json();
+
+        // Clear automation state
+        await chrome.storage.local.set({
+            automationRunning: false,
+            automationStartTime: null,
+            processId: null
+        });
+
+        // Show notification
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'assets/icons/icon48.png',
+            title: 'LinkedIn Auto Job Applier',
+            message: 'Job application automation stopped'
+        });
+
+        sendResponse({ success: true, message: 'Automation stopped' });
+
+    } catch (error) {
+        console.error('Error stopping automation:', error);
+        sendResponse({ success: false, error: error.message });
+    }
+}
+
+// Handle status check
+async function handleGetStatus(sendResponse) {
+    try {
+        const storage = await chrome.storage.local.get([
+            'automationRunning',
+            'automationStartTime',
+            'processId'
+        ]);
+
+        // Also check with backend
+        try {
+            const response = await fetch('http://localhost:5000/api/automation-status');
+            const backendStatus = await response.json();
+
+            sendResponse({
+                success: true,
+                status: {
+                    running: storage.automationRunning || false,
+                    startTime: storage.automationStartTime,
+                    processId: storage.processId,
+                    backend: backendStatus
+                }
+            });
+        } catch (fetchError) {
+            sendResponse({
+                success: true,
+                status: {
+                    running: storage.automationRunning || false,
+                    startTime: storage.automationStartTime,
+                    processId: storage.processId,
+                    backend: { error: 'Backend unreachable' }
+                }
+            });
+        }
+
+    } catch (error) {
+        console.error('Error getting status:', error);
+        sendResponse({ success: false, error: error.message });
+    }
+}
+
+// Handle tab updates - monitor LinkedIn navigation
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete' && tab.url && tab.url.includes('linkedin.com/jobs')) {
+        console.log('LinkedIn jobs page loaded:', tab.url);
+
+        // Inject content script if needed
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: ['content/content.js']
+        }).catch(err => {
+            // Script might already be injected
+            console.log('Content script injection skipped:', err.message);
+        });
+    }
+});
+
+// Keep service worker alive by setting up periodic tasks
+chrome.alarms.create('keepAlive', { periodInMinutes: 1 });
+chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === 'keepAlive') {
+        console.log('Service worker keepalive ping');
+    }
+});
+
+console.log('LinkedIn Auto Job Applier background service worker loaded'); 

@@ -51,7 +51,7 @@ class LinkedInJobApplier {
                         </svg>
                         <span>Auto Job Applier</span>
                     </div>
-                    <button class="popup-minimize" title="Minimize">
+                    <div class="header-controls"><div class="drag-handle" title="Drag to move"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg></div><button class="popup-minimize" title="Minimize">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M6 12h12" stroke="currentColor" stroke-width="2"/>
                         </svg>

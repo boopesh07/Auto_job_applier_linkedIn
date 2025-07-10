@@ -59,3 +59,48 @@ Refer to `chrome-extension/TESTING_GUIDE.md` for comprehensive testing instructi
 ---
 
 **Note**: This is a personal development branch. For the original project, refer to the upstream repository. 
+
+# Privacy Policy for LinkedIn Auto Job Applier Chrome Extension
+
+**Last updated: [Current Date]**
+
+## Information We Collect
+This extension operates locally and does not collect personal information except:
+- Settings you configure (name, email, preferences)
+- Local application history
+- Data sent to AI services if enabled (OpenAI/DeepSeek)
+
+## Data Usage
+- Personal info used only for auto-filling forms
+- All data stored locally in your browser
+- No data transmitted to our servers
+
+## Third-Party Services
+- OpenAI: Subject to OpenAI's Privacy Policy
+- DeepSeek: Subject to DeepSeek's Privacy Policy
+
+## Contact: [your-email@example.com] 
+
+# LinkedIn Auto Job Applier - Chrome Extension
+
+Streamline your job search with AI-powered automation for LinkedIn applications.
+
+## Key Features
+✅ One-click job applications
+✅ AI-powered form filling
+✅ Smart question answering
+✅ Application tracking
+✅ Customizable preferences
+
+## How It Works
+1. Install extension and configure settings
+2. Navigate to LinkedIn job postings
+3. Click "Auto Apply" button
+4. Watch as forms are filled automatically
+
+## Requirements
+- Chrome browser
+- LinkedIn account
+- Optional: AI API key for enhanced features
+
+Perfect for job seekers who want to apply to more positions efficiently while maintaining quality applications. 
