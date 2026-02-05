@@ -29,7 +29,7 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchWindowException, ElementNotInteractableException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchWindowException, ElementNotInteractableException, TimeoutException
 
 from config.personals import *
 from config.questions import *
@@ -202,6 +202,13 @@ def apply_filters() -> None:
 
         wait.until(EC.presence_of_element_located((By.XPATH, '//button[normalize-space()="All filters"]'))).click()
         buffer(recommended_wait)
+        # Wait until the filter panel is expanded and Sort by / Date posted are in the DOM
+        try:
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//h3[normalize-space(.)="Sort by"]'))
+            )
+        except TimeoutException:
+            print_lg("Filter panel did not open in time, continuing...")
 
         wait_span_click(driver, sort_by)
         wait_span_click(driver, date_posted)
@@ -236,7 +243,22 @@ def apply_filters() -> None:
         multi_sel_noWait(driver, commitments)
         if benefits or commitments: buffer(recommended_wait)
 
-        show_results_button: WebElement = driver.find_element(By.XPATH, '//button[contains(@aria-label, "Apply current filters to show")]')
+        # Button text varies (e.g. "Show 1k+ results", "Show 3.8M+ results") but always starts with "Show"
+        # Prefer button inside the filter panel (dialog) to avoid clicking another "Show" elsewhere
+        show_results_xpaths = [
+            '//*[@role="dialog"]//button[starts-with(normalize-space(.), "Show")]',
+            '//div[contains(@class, "reusable-search-filters")]//button[starts-with(normalize-space(.), "Show")]',
+            '//button[starts-with(normalize-space(.), "Show")]',
+        ]
+        show_results_button: WebElement = None
+        for xpath in show_results_xpaths:
+            try:
+                show_results_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+                break
+            except Exception:
+                continue
+        if not show_results_button:
+            raise NoSuchElementException("Could not find 'Show' results button in filter panel")
         show_results_button.click()
 
         global pause_after_filters
@@ -245,7 +267,7 @@ def apply_filters() -> None:
 
     except Exception as e:
         print_lg("Setting the preferences failed!")
-        # print_lg(e)
+        print_lg(f"  {type(e).__name__}: {e}")
 
 
 
@@ -425,13 +447,10 @@ def answer_common_questions(label: str, answer: str) -> str:
 
 # Function to answer the questions for Easy Apply
 def answer_questions(modal: WebElement, questions_list: set, work_location: str, job_description: str | None = None ) -> set:
-    # Get all questions from the page
-     
+    # Get all questions from the page (include single-line text so Phone etc. are found)
     all_questions = modal.find_elements(By.XPATH, ".//div[@data-test-form-element]")
-    # all_questions = modal.find_elements(By.CLASS_NAME, "jobs-easy-apply-form-element")
-    # all_list_questions = modal.find_elements(By.XPATH, ".//div[@data-test-text-entity-list-form-component]")
-    # all_single_line_questions = modal.find_elements(By.XPATH, ".//div[@data-test-single-line-text-form-component]")
-    # all_questions = all_questions + all_list_questions + all_single_line_questions
+    all_single_line_questions = modal.find_elements(By.XPATH, ".//div[@data-test-single-line-text-form-component]")
+    all_questions = all_questions + all_single_line_questions
 
     for Question in all_questions:
         # Check if it's a select Question
@@ -872,12 +891,19 @@ def apply_to_jobs(search_terms: list[str]) -> None:
 
                 # Find all job listings in current page
                 buffer(3)
-                job_listings = driver.find_elements(By.XPATH, "//li[@data-occludable-job-id]")  
+                job_listings = driver.find_elements(By.XPATH, "//li[@data-occludable-job-id]")
+                n_jobs = len(job_listings)
 
-            
-                for job in job_listings:
+                for i in range(n_jobs):
                     if keep_screen_awake: pyautogui.press('shiftright')
                     if current_count >= switch_number: break
+                    # Re-find list each time to avoid stale element after page updates (e.g. after Easy Apply submit)
+                    try:
+                        job_listings = driver.find_elements(By.XPATH, "//li[@data-occludable-job-id]")
+                        if i >= len(job_listings): break
+                        job = job_listings[i]
+                    except Exception:
+                        break
                     print_lg("\n-@-\n")
 
                     job_id,title,company,work_location,work_style,skip = get_job_main_details(job, blacklisted_companies, rejected_jobs)
@@ -992,11 +1018,10 @@ def apply_to_jobs(search_terms: list[str]) -> None:
                                 # Wait a moment for modal to fully load
                                 buffer(1)
                                 
-                                # Use enhanced button finding for initial Next button
+                                # Analyze modal: multi-step (Next → Review → Submit) vs single-step (Submit only on first screen)
                                 success, button_found = find_and_click_easy_apply_button(modal, driver, ["Next"])
                                 if not success:
-                                    print_lg("Failed to find initial Next button")
-                                    raise Exception("Could not find initial Next button")
+                                    print_lg("No initial Next button — single-step Easy Apply modal (form + Submit on same screen); will fill form and submit.")
                                 
                                 # if description != "Unknown":
                                 #     resume = create_custom_resume(description)
@@ -1215,9 +1240,9 @@ def main() -> None:
                 date_posted = date_options[date_options.index(date_posted)+1 if date_options.index(date_posted)+1 > len(date_options) else -1] if stop_date_cycle_at_24hr else date_options[0 if date_options.index(date_posted)+1 >= len(date_options) else date_options.index(date_posted)+1]
             if alternate_sortby:
                 global sort_by
-                sort_by = "Most recent" if sort_by == "Most relevant" else "Most relevant"
+                sort_by = "Most recent" if sort_by == "Most recent" else "Most relevant"
                 total_runs = run(total_runs)
-                sort_by = "Most recent" if sort_by == "Most relevant" else "Most relevant"
+                sort_by = "Most recent" if sort_by == "Most recent" else "Most relevant"
             total_runs = run(total_runs)
             if dailyEasyApplyLimitReached:
                 break
