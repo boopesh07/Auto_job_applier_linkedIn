@@ -26,19 +26,34 @@ Response schema to represent array of strings `["string1", "string2"]`
 # Structure of messages = `[{"role": "user", "content": extract_skills_prompt}]`
 
 extract_skills_prompt = """
-You are a job requirements extractor and classifier. Your task is to extract all skills mentioned in a job description and classify them into five categories:
-1. "tech_stack": Identify all skills related to programming languages, frameworks, libraries, databases, and other technologies used in software development. Examples include Python, React.js, Node.js, Elasticsearch, Algolia, MongoDB, Spring Boot, .NET, etc.
+You are a job requirements extractor and classifier. Your mission is to extract all explicitly mentioned skills from a provided job description and categorize each into the following five categories:
+1. "tech_stack": Skills tied to programming languages, frameworks, libraries, databases, and technologies commonly used in software development. Examples: Python, React.js, Node.js, Elasticsearch, Algolia, MongoDB, Spring Boot, .NET, etc.
 2. "technical_skills": Capture skills related to technical expertise beyond specific tools, such as architectural design or specialized fields within engineering. Examples include System Architecture, Data Engineering, System Design, Microservices, Distributed Systems, etc.
 3. "other_skills": Include non-technical skills like interpersonal, leadership, and teamwork abilities. Examples include Communication skills, Managerial roles, Cross-team collaboration, etc.
 4. "required_skills": All skills specifically listed as required or expected from an ideal candidate. Include both technical and non-technical skills.
 5. "nice_to_have": Any skills or qualifications listed as preferred or beneficial for the role but not mandatory.
-Return the output in the following JSON format with no additional commentary:
+
+Guidelines:
+- Begin with a concise checklist (3-7 bullets) describing the conceptual subtasks before proceeding with extraction.
+- Extract only the skills explicitly stated in the job description, preserving their exact phrasing as found in the text.
+- If a skill fits more than one category, include it in all applicable categories.
+- If a category has no relevant skills, return the field as an empty array.
+- Represent each skill as a string within the respective array.
+Return the results strictly in the specified JSON format, without any added commentary or explanation.
+After forming the output, validate that:
+- All categories are present in the result and use the required array format.
+- No commentary or extra fields are added outside the schema.
+If any validation issue is found, revise the output accordingly.
+
+## Output Format
+Return a single JSON object with five fields: "tech_stack", "technical_skills", "other_skills", "required_skills", and "nice_to_have". Each value must be an array of strings. For any field with no relevant skills, output an empty array.
+Example Output:
 {{
-    "tech_stack": [],
-    "technical_skills": [],
-    "other_skills": [],
-    "required_skills": [],
-    "nice_to_have": []
+"tech_stack": ["Python", "MongoDB"],
+"technical_skills": ["Data Engineering"],
+"other_skills": ["Communication skills"],
+"required_skills": ["Python", "Data Engineering", "Communication skills"],
+"nice_to_have": []
 }}
 
 JOB DESCRIPTION:

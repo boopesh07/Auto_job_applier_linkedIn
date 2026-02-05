@@ -204,10 +204,22 @@ def convert_to_lakhs(value: str) -> str:
 
 def convert_to_json(data) -> dict:
     '''
-    Function to convert data to JSON, if unsuccessful, returns `{"error": "Unable to parse the response as JSON", "data": data}`
+    Function to convert data to JSON, if unsuccessful, returns `{"error": "Unable to parse the response as JSON", "data": data}`.
+    Strips whitespace and tries to extract JSON from markdown code blocks (```json ... ``` or ``` ... ```) if present.
     '''
+    if not isinstance(data, str):
+        return {"error": "Expected string input", "data": data}
+    s = data.strip()
+    # Extract from markdown code block if present
+    if s.startswith("```"):
+        lines = s.split("\n")
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        s = "\n".join(lines)
     try:
-        result_json = json.loads(data)
+        result_json = json.loads(s)
         return result_json
-    except json.JSONDecodeError:
-        return {"error": "Unable to parse the response as JSON", "data": data}
+    except json.JSONDecodeError as e:
+        return {"error": f"Unable to parse the response as JSON: {e.msg} at line {e.lineno} col {e.colno}", "data": data}

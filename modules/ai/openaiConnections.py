@@ -185,6 +185,8 @@ def ai_completion(client: OpenAI, messages: list[dict], response_format: dict = 
     
     if response_format:
         result = convert_to_json(result)
+        if isinstance(result, dict) and result.get("error"):
+            raise ValueError(result["error"])
     
     print_lg("\nAI Answer to Question:\n")
     print_lg(result, pretty=response_format)
@@ -200,7 +202,8 @@ def ai_extract_skills(client: OpenAI, job_description: str, stream: bool = strea
     * Returns a `dict` object representing JSON response
     """
     print_lg("-- EXTRACTING SKILLS FROM JOB DESCRIPTION")
-    try:        
+    try:  
+        
         prompt = extract_skills_prompt.format(job_description)
 
         messages = [{"role": "user", "content": prompt}]
@@ -208,6 +211,7 @@ def ai_extract_skills(client: OpenAI, job_description: str, stream: bool = strea
         return ai_completion(client, messages, response_format=extract_skills_response_format, stream=stream)
     ##<
     except Exception as e:
+        print_lg(f"Skills extraction failed: {type(e).__name__}: {e}")
         ai_error_alert(f"Error occurred while extracting skills from job description. {apiCheckInstructions}", e)
 
 
