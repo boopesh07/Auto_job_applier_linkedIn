@@ -80,6 +80,12 @@ smooth_scroll = False               # True or False, Note: True or False are cas
 # If enabled (True), the program would keep your screen active and prevent PC from sleeping. Instead you could disable this feature (set it to false) and adjust your PC sleep settings to Never Sleep or a preferred time. 
 keep_screen_awake = True            # True or False, Note: True or False are case-sensitive (Note: Will temporarily deactivate when any application dialog boxes are present (Eg: Pause before submit, Help needed for a question..))
 
+# Path to Chrome executable (optional). Leave empty or None to use system default Chrome.
+chrome_executable_path = r"C:\Users\Shubharika\Downloads\chrome-win64 (1)\chrome-win64\chrome.exe"       # e.g. None or "" or r"C:\Path\To\Your\Chrome\chrome.exe"
+'''
+Note: If you install a separate Chrome (e.g. for testing or to keep bot traffic isolated), set this to that chrome.exe path.
+      Only that executable will be used when the bot runs. Example: r"C:\ChromeForBot\Application\chrome.exe"
+'''
 # Run in undetected mode to bypass anti-bot protections (Preview Feature, UNSTABLE. Recommended to leave it as False)
 stealth_mode = False                # True or False, Note: True or False are case-sensitive
 
